@@ -12,3 +12,18 @@
    </body>
 
 </html>
++<!DOCTYPE html>
++<html>
++
++   <head>
++      <title>HTML Button Tag</title>
++   </head>
++
++   <body>
++      <form>
++         <button name = "button" value = "OK" type = "button">Click Me</button>
++      </form>
++   </body>
++
++</html>
+:wq
