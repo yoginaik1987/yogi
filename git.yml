@@ -1,0 +1,11 @@
+--- # Git installation
+- hosts: all
+  user: yogesh
+  become: yes
+  connection: ssh
+  vars:
+          pkg: tree
+  tasks:
+          - name: git installation
+            action: yum name="{{pkg}}" state=present
+
