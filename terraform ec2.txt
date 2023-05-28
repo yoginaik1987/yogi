@@ -1,0 +1,224 @@
+export AWS_ACCESS_KEY_ID="AKIAUMBECHMELX2FXPP6"
+export AWS_SECRET_ACCESS_KEY="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"
+
+below is the block and written under it is argument 
+
+meta argument ?
+1> count 
+	count is like index you can use count if you wanted to configure miltiple devices in aws 
+	you can use [count.index]
+	
+	resource "aws_instance" "instance_1" {
+	  count = 4
+        ami = "ami-0889a44b331db0194"
+        instance_type = "t2.micro"
+
+tegs = { 	
+	name = "new_instance- ${count.index}"
+
+2> for_each
+	this can be used to use diffrent words like names
+for duplicate names you can use toset ({yog,tejyog,yogtej,tej})
+use :	
+	locals {
+	anyname = toset ({"names","names","names","names"})
+}
+
+resource "aws_instance" "instance_1" {
+	  for_each = local.anyname
+        ami = "ami-0889a44b331db0194"
+        instance_type = "t2.micro"
+note: (toset is the function to convert your list into set 
+locals.anyname is the key )
+	
+tegs = { 	
+	name = each.key
+}
+
+to use diffrent ami use below 
+locals {
+	instances = toset ({"names":"ami","names":"ami","names":"ami","names":"ami"})
+
+resource "aws_instance" "instance_1" {
+	  for_each = locals.anyname
+        ami = "each.value"
+        instance_type = "t2.micro"
+
+tegs = { 	
+	name = each.key
+}
+
+note: "name" is key and "ami" is value
+
+3> depends_on
+4> lifecycle
+	in lifecycle you can prevent destroy , like you can tell terrafor what you want 
+
+lifecycle {
+	create_before_destroy = true
+	prevent_destroy = true
+	}
+its like give super power to your block
+
+
+VPC
+
+terraform {
+        required_providers {
+        aws = {
+        source = "hashicorp/aws"
+        version = "~> 4.16.0"
+}
+}
+required_version = "~> 1.4.0"
+}
+
+provider "aws" {
+        region = "us-east-1"
+}
+
+resource  "aws_vpc" "my_vpc1" {
+        cidr_block = "10.0.0.0/16"
+
+tags = {
+        name = "myvpc22"
+        }
+}
+
+
+resource "aws_subnet" "new_subnet" {
+        vpc_id = aws_vpc.my_vpc1.id
+        cidr_block = "10.0.1.0/24"
+        availability_zone = "us-east-1a"
+}
+
+resource "aws_internet_gateway" "aws_internet_gate" {
+        vpc_id = aws_vpc.my_vpc1.id
+
+tags = {
+        name = "igw-new"
+        }
+}
+
+resource "aws_route_table" "route_conf" {
+        vpc_id = aws_vpc.my_vpc1.id
+
+route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = "aws_internet_gateway.aws_internet_gate.id"
+        }
+
+tags = {
+        name = "route_table"
+        }
+}
+
+resource "aws_route_table_association" "my_route_table_associate" {
+        subnet_id = aws_subnet.new_subnet.id
+        route_table_id = aws_route_table.route_conf.id
+}
+
+CReATE EC2 USING SNETWORK SETUP
+
+resource "aws_instance" "instance_1" {
+        ami = "ami-0889a44b331db0194"
+        instance_type = "t2.micro"
+        subnet_id = aws_subnet.subnet_1.id
+	associate_public_ip_address = true (to assign public ip address)
+}
+
+
+Security_group
+
+
+resource "aws_security_group" "security_group" {
+         name = "allow_tls"
+        description = "Allow TLS inbound traffic"
+        vpc_id = aws_vpc.vpc_tdc.id
+
+ingress {
+         description = "tls from vpc"
+        from_port = 443
+        to_port = 443
+        protocol = "tcp"
+        cidr_blocks= [aws_vpc.vpc_tdc.cidr_block]
+        }
+
+egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+        ipv6_cidr_blocks = ["::/0"]
+        }
+
+tags = {
+        name = "tls_port"
+        }
+}
+
+
+
+
+PEM KEY CRETION
+
+provider "tls" {
+        version = "~> 4.0.4"
+}
+
+resource "tls_private_key" "new_key" {
+        algorithm = "RSA"
+        rsa_bits = 2048
+}
+
+resource "null_resource" "export_private_key" {
+        provisioner "local-exec" {
+        command = <<EOT
+        echo "${tls_private_key.new_key.private_key_pem}" > private_key.pem
+        EOT
+     }
+  depends_on = [tls_private_key.new_key]
+}
+
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 email@example.com"
+}
+
+EC2
+
+terraform {
+        required_providers {
+        aws = {
+        source = "hashicorp/aws"
+        version = "~> 4.16"
+        }
+}
+required_version = "~> 1.4.0"
+}
+
+
+
+provider "aws" {
+        region = "us-east-1"
+}
+
+
+resource "aws_instance" "ec2_webhost" {
+        count = 4
+        ami = "ami-0889a44b331db0194"
+        instane_type = "t2.micro"
+}
+
+output "ec2_details" {
+        value = aws_instance.awsec2[*].public_ip
+[*]=if there are multiple instance 
+
+
+
+
+terraform destroy -target=aws_instance.ec2_instance
+
+ingrass :inbound traffic rule
+egrass : outbound traffic rule 

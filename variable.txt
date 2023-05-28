@@ -1,0 +1,113 @@
+Repository : sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+
+var = object.keyname (object= var, keyname= filename or anything which you wanted to create as variable)
+
+variable "filename" {
+	default = "/c/Users/Yogin/variable/variable_test.txt"
+}
+
+
+variable "content" {
+	default = "this is test file and successful"
+	}
+
+variable "variablename" {}
+
+another way: export TF_VF_variablename="content which ever you wanted to put"
+
+use output for result
+
+output "anyname" {
+value = var.variablename
+}
+
+
+type of terraform 
+string : spl char
+intenger : number
+map : key, value
+list : list multiple item in item1,item2...index of first item start with 0, next is 1
+
+variable "file_list {
+type = list
+default = ("fliepath1","filepath2")
+}
+
+output : resouece "local_file" "name" {
+	filename = var.file_list[0]
+	content = "any"
+}
+Variable LIST
+variable "file_list" {
+        type = list(string)
+        default = ["/home/ec2-user/testing/test1.txt","/home/ec2-user/testing/test2.txt"]
+}
+
+Vriable MAP
+variable "new_file_list" {
+        type = map(string)
+default = {
+        "content1" = "this is updated report"
+        "content2" = "this is updated report by me2"
+}
+
+}
+}
+OUTPUT MAp and list
+resource "local_file" "mainfile" {
+filename = var.file_list[0]
+content = var.new_file_list["content1"]
+}
+
+
+resource "local_file" "newfile" {
+        filename = var.file_list[1]
+        content = var.new_file_list["content2"]
+
+}
+
+
+map is like key = value
+default {
+content1(key) = "this is content" (value)
+
+
+
+object(where we can create mix like int,numbers, string everything)
+where u decide the data type 
+to  change thing as per yor requirments is object
+
+variable "ec2_1" {
+type = object ({
+	name = dtring
+	instances  = number 
+	keys = list(string)
+	ami = string
+	})(user define dtatype)
+
+default = {
+	name = "test_e2_instance"
+	instances = 4
+	keys = ["key1.pem","key2.pem"]
+	ami = "ubuntu.instance.ami.sny"
+}
+
+output 
+output "anymane" {
+value = var.aws.ec2_1.instances(instead of instance u can use anything which you wanted to output)
+}
+
+
+terraform apply -var-file="testing.tfvars"
+
+
+output "anyname" {
+value = var.aws_anyname.instances"(note:if you use keys intead of instances it will show keys, if nothing written it will show all)
+
+.tfvar is extension of file this file we can create and use as script this file we can create our object and ran it when ever required 
+terraform apply -var-file="filename.tfvars"
+
+
+AWS CLI
+command : aws configure
+      
